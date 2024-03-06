@@ -36,7 +36,7 @@ def format_latest_search_result(query):
     return "No web search result found."
 
 # Initialize Llama model
-model_path = "/home/shreyas/llama.cpp/models/gemma-7b-it/gemma-7b-it-q8_0.gguf"
+model_path = "models/gemma-7b-it/gemma-7b-it-q8_0.gguf"
 #model = Llama(model_path=model_path, chat_format="chatml", n_gpu_layers=-1, n_batch=2048)
 model = LlamaCpp(model_path=model_path,
                  #chat_format="conv", 
