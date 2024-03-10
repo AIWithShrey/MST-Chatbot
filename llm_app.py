@@ -9,9 +9,8 @@ from langchain_community.llms import LlamaCpp
 from langchain.prompts import PromptTemplate
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.agents import AgentExecutor, create_react_agent
+from langchain import hub
 import tempfile
-
-os.environ['TAVILY_API_KEY'] = "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"
 
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
@@ -25,7 +24,7 @@ def format_chat_history(history):
         formatted_history += f'User: {exchange["Human"]}\nChatACM: {exchange["ChatACM"]}\n'
     return formatted_history
 
-tools = [TavilySearchResults(max_results=3)]
+tools = [TavilySearchResults(max_results=4)]
 
 def format_latest_search_result(query):
     # Fetch the latest result for the given query
@@ -36,28 +35,31 @@ def format_latest_search_result(query):
     return "No web search result found."
 
 # Initialize Llama model
-model_path = "models/gemma-7b-it/gemma-7b-it-q8_0.gguf"
+model_path = "/home/shreyas/llama.cpp/models/gemma-7b-it/gemma-7b-it-q8_0.gguf"
 #model = Llama(model_path=model_path, chat_format="chatml", n_gpu_layers=-1, n_batch=2048)
 model = LlamaCpp(model_path=model_path,
                  #chat_format="conv", 
                  n_gpu_layers=-1, 
                  n_batch=4096,
-                 n_ctx=4096, 
-                 temperature=0.5)
+                 n_ctx=5096, 
+                 temperature=0)
+
+prompt = hub.pull("hwchase17/react-chat")
 
 template = """
-ChatACM is a large language model trained by ACM AI at Missouri University of Science and Technology.
+Your name is ChatACM. You are a large language model trained by ACM AI at Missouri University of Science and Technology.
 
-ChatACM is designed to be able to assist students of Missouri University Science and Technology (MS&T) with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, ChatACM is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
+You designed to be able to assist students of Missouri University Science and Technology (MS&T) with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of academic topics.
 
-ChatACM is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, ChatACM is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.
+You are able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses questions related to MS&T. Additionally, you are able to generate your own text based on the input you receives, allowing you to engage 
+in discussions and provide explanations and descriptions on a wide range of academic topics.
 
-Overall, ChatACM is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, ChatACM is here to assist.
+Overall, you are a powerful tool that can help with a wide range of tasks and provide valuable insights and information on MS&T and related topics.
 
 TOOLS:
 ------
 
-ChatACM has access to the following tools:
+You have access to the following tools:
 
 {tools}
 
@@ -70,7 +72,7 @@ Action Input: the input to the action
 Observation: the result of the action
 ```
 
-When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+When you have a response to say to the Human, you MUST use the format:
 
 ```
 Thought: Do I need to use a tool? No
@@ -85,7 +87,7 @@ Previous conversation history:
 New input: {input}
 {agent_scratchpad}
 """
-prompt = PromptTemplate(input_variables=['agent_scratchpad', 'input', 'tool_names', 'tools'], template=template)
+#prompt = PromptTemplate(input_variables=['agent_scratchpad', 'input', 'tool_names', 'tools'], template=prompt)
 
 # Streamlit app setup
 st.set_page_config(layout="wide", page_title="ChatACM v2.0")
@@ -104,9 +106,13 @@ with col2:
 
 # Function to get a response from the model
 def get_response(message):
-    chat_history = format_chat_history(st.session_state.chat_history)
+    chat_history = st.session_state.chat_history#format_chat_history(st.session_state.chat_history)
     agent = create_react_agent(model, tools, prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True)
+    agent_executor = AgentExecutor(agent=agent, 
+                                   tools=tools, 
+                                   handle_parsing_errors=True,
+                                   max_iterations=15, 
+                                   verbose=True)
     response = agent_executor.invoke({"input": message, "chat_history": chat_history})
     return response['output']
 
@@ -159,7 +165,7 @@ def get_response_with_doc(user_input, uploaded_file):
 def handle_response(user_input):
     if user_input:
         response = get_response(user_input)
-        # Update chat history
+        # Update chat hisory
         st.session_state.chat_history.append({"Human": user_input, "ChatACM": response})
         return response
     return ""
