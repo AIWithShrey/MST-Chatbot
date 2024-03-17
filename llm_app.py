@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import tempfile
 import replicate
+from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -13,6 +14,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.agents import AgentExecutor, create_react_agent, Tool
 from langchain import hub
 
+load_dotenv(find_dotenv(), override=True)
 
 st.set_page_config(layout="wide", page_title="ChatACM v2.0")
 
@@ -100,10 +102,10 @@ prompt_template = PromptTemplate.from_template(template=template)
 
 # Streamlit app setup
 
-st.title("ChatACM v2.0")
+st.title("ChatACM v2.5")
 st.text("S&T's very own chatbot. Proudly presented by ACM AI.")
 st.text("This is currently a work in progress. Your patience is much appreciated.")
-st.text("ChatACM can now browse the web for you! Simply ask your question and it will respond with up-to-date information.")
+st.text("ChatACM can search the web and also generate images for you now! Ask a question or to generate an image.")
 st.caption("Questions? Reach out to Shreyas Mocherla: ")
 st.caption("Email - vmgng@umsystem.edu")
 st.caption("ACM AI Discord - https://discord.gg/rvkW7HM58k")
