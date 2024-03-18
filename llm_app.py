@@ -55,7 +55,7 @@ def generate_image(input=""):
                 input={
                     "width": 768,
                     "height": 768,
-                    "prompt": f"{input}, cinematic, dramatic",
+                    "prompt": f"{input}, cinematic, dramatic, realistic, high quality, high res, high resolution, high contrast, high saturation, high brightness, high sharpness, high definition, high detail, high focus, high depth, high color",
                     "refine": "expert_ensemble_refiner",
                     "scheduler": "K_EULER",
                     "lora_scale": 0.6,
@@ -63,7 +63,7 @@ def generate_image(input=""):
                     "guidance_scale": 7.5,
                     "apply_watermark": False,
                     "high_noise_frac": 0.8,
-                    "negative_prompt": "",
+                    "negative_prompt": "unclear, low res, blurry, pixelated, low quality, low resolution, low light, low lighting, low contrast, low saturation, low brightness, low sharpness, low definition, low detail, low focus, low depth, low color",
                     "prompt_strength": 0.8,
                     "num_inference_steps": 25
                 }
@@ -178,7 +178,7 @@ def handle_response(user_input):
     if user_input:
         response = get_response(user_input)
         # Assuming the response from image generator includes a URL
-        if 'generate' in user_input.lower() and isinstance(response, str) and "http" in response:
+        if ('generate' in user_input.lower() or 'image' in user_input.lower()) and (isinstance(response, str) and "http" in response):
             st.session_state.chat_history.append({"Human": user_input, "ChatACM": response})
             # Display the generated image
             url_start = response.find("http")
